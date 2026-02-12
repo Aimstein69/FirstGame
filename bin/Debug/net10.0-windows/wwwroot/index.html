@@ -1,0 +1,307 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <title>RPG 2D</title>
+    <style>
+      body {
+        margin: 0;
+        background: #222;
+        overflow: hidden;
+      }
+      canvas {
+        display: block;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="game"></canvas>
+
+    <script>
+      async function start() {
+        const canvas = document.getElementById("game");
+        const ctx = canvas.getContext("2d");
+
+        function resize() {
+          canvas.width = window.innerWidth;
+          canvas.height = window.innerHeight;
+        }
+        resize();
+        window.onresize = resize;
+
+        // Charger la map JSON
+        let map = null;
+
+        async function loadMap(name) {
+          const response = await fetch(`maps/${name}.json`);
+          map = await response.json();
+          console.log("Map chargée :", map);
+        }
+
+        await loadMap("village");
+
+        // Joueur
+        let player = {
+          x: 64,
+          y: 64,
+          size: 24,
+          speed: 3,
+        };
+
+        // PNJ avec dialogue avancé
+        let npc = {
+          x: 168,
+          y: 160,
+          size: 24,
+          dialogue: [
+            { text: "Bonjour voyageur, j'ai besoin de ton aide." },
+            {
+              text: "Accepterais-tu de m'aider ?",
+              choices: [
+                { text: "Oui, bien sûr.", next: 2, action: "accept" },
+                { text: "Non, désolé.", next: 3, action: "refuse" },
+              ],
+            },
+            { text: "Merci beaucoup ! J'ai une quête pour toi.", end: true }, // index 2
+            { text: "Très bien, peut-être une autre fois.", end: true }, // index 3
+          ],
+        };
+
+        let keys = {};
+
+        // Dialogue
+        let questAccepted = false;
+        let talking = false;
+        let dialogueIndex = 0;
+        let selectedChoice = 0;
+
+        window.addEventListener("keydown", (e) => {
+          keys[e.key] = true;
+
+          // Quitter dialogue
+          if (e.key === "Escape") {
+            talking = false;
+            dialogueIndex = 0;
+            selectedChoice = 0;
+            return;
+          }
+
+          // Si on est en dialogue
+          if (talking) {
+            const entry = npc.dialogue[dialogueIndex];
+
+            // Navigation dans les choix
+            if (entry.choices) {
+              if (e.key === "ArrowUp") {
+                selectedChoice = Math.max(0, selectedChoice - 1);
+              }
+              if (e.key === "ArrowDown") {
+                selectedChoice = Math.min(
+                  entry.choices.length - 1,
+                  selectedChoice + 1,
+                );
+              }
+            }
+
+            // Avancer dans le dialogue
+            if (e.key === "e" || e.key === "E") {
+              advanceDialogue();
+            }
+
+            return;
+          }
+
+          // Si on n'est pas en dialogue → interaction
+          if (e.key === "e" || e.key === "E") {
+            if (isNearNPC()) {
+              talking = true;
+              dialogueIndex = 0;
+              selectedChoice = 0;
+            }
+          }
+        });
+
+        window.addEventListener("keyup", (e) => {
+          keys[e.key] = false;
+        });
+
+        // Collision rectangle (4 coins) avec la map
+        function isWallRect(x, y, size) {
+          const corners = [
+            { x: x, y: y },
+            { x: x + size, y: y },
+            { x: x, y: y + size },
+            { x: x + size, y: y + size },
+          ];
+
+          for (const c of corners) {
+            const tileX = Math.floor(c.x / map.tileSize);
+            const tileY = Math.floor(c.y / map.tileSize);
+
+            if (
+              tileX < 0 ||
+              tileY < 0 ||
+              tileX >= map.width ||
+              tileY >= map.height
+            )
+              return true;
+
+            if (map.tiles[tileY][tileX] === 1) return true;
+          }
+
+          return false;
+        }
+
+        // Collision joueur ↔ PNJ
+        function isCollidingWithNPC(nextX, nextY) {
+          return !(
+            nextX + player.size < npc.x ||
+            nextX > npc.x + npc.size ||
+            nextY + player.size < npc.y ||
+            nextY > npc.y + npc.size
+          );
+        }
+
+        // Distance joueur → PNJ
+        function isNearNPC() {
+          const distX = Math.abs(player.x - npc.x);
+          const distY = Math.abs(player.y - npc.y);
+          return distX < 40 && distY < 40;
+        }
+
+        // Avancer dans le dialogue
+        function advanceDialogue() {
+          const entry = npc.dialogue[dialogueIndex];
+
+          // Si le message contient des choix
+          if (entry.choices) {
+            const choice = entry.choices[selectedChoice];
+            if (choice.action === "accept") {
+              questAccepted = true;
+              console.log("Quête acceptée !");
+            }
+            if (choice.action === "refuse") {
+              questAccepted = false;
+              console.log("Quête refusée. !");
+            }
+            dialogueIndex = choice.next;
+            selectedChoice = 0;
+            return;
+          }
+
+          // Message simple
+          dialogueIndex++;
+
+          // Fin du dialogue
+          if (entry.end) {
+            talking = false;
+            dialogueIndex = 0;
+            selectedChoice = 0;
+          }
+        }
+
+        function update() {
+          // Si on parle → pas de mouvement
+          if (talking) {
+            draw();
+            requestAnimationFrame(update);
+            return;
+          }
+
+          let nextX = player.x;
+          let nextY = player.y;
+
+          if (keys["ArrowUp"] || keys["z"]) nextY -= player.speed;
+          if (keys["ArrowDown"] || keys["s"]) nextY += player.speed;
+          if (keys["ArrowLeft"] || keys["q"]) nextX -= player.speed;
+          if (keys["ArrowRight"] || keys["d"]) nextX += player.speed;
+
+          // Collision sur X
+          if (
+            !isWallRect(nextX, player.y, player.size) &&
+            !isCollidingWithNPC(nextX, player.y)
+          ) {
+            player.x = nextX;
+          }
+
+          // Collision sur Y
+          if (
+            !isWallRect(player.x, nextY, player.size) &&
+            !isCollidingWithNPC(player.x, nextY)
+          ) {
+            player.y = nextY;
+          }
+
+          draw();
+          requestAnimationFrame(update);
+        }
+
+        function draw() {
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+          // MAP
+          if (map) {
+            for (let y = 0; y < map.height; y++) {
+              for (let x = 0; x < map.width; x++) {
+                const tile = map.tiles[y][x];
+
+                if (tile === 1)
+                  ctx.fillStyle = "#444"; // mur
+                else ctx.fillStyle = "#2a2"; // sol
+
+                ctx.fillRect(
+                  x * map.tileSize,
+                  y * map.tileSize,
+                  map.tileSize,
+                  map.tileSize,
+                );
+              }
+            }
+          }
+
+          // PNJ
+          ctx.fillStyle = "blue";
+          ctx.fillRect(npc.x, npc.y, npc.size, npc.size);
+
+          // Joueur
+          ctx.fillStyle = "yellow";
+          ctx.fillRect(player.x, player.y, player.size, player.size);
+
+          // Dialogue
+          if (talking) {
+            const entry = npc.dialogue[dialogueIndex];
+
+            // Boîte
+            ctx.fillStyle = "rgba(0,0,0,0.7)";
+            ctx.fillRect(20, canvas.height - 160, canvas.width - 40, 140);
+
+            ctx.fillStyle = "white";
+            ctx.font = "20px Arial";
+            ctx.fillText(entry.text, 40, canvas.height - 120);
+
+            // Choix
+            if (entry.choices) {
+              for (let i = 0; i < entry.choices.length; i++) {
+                const choice = entry.choices[i];
+                const y = canvas.height - 80 + i * 30;
+
+                if (i === selectedChoice) {
+                  ctx.fillStyle = "yellow";
+                  ctx.fillText("> " + choice.text, 40, y);
+                } else {
+                  ctx.fillStyle = "white";
+                  ctx.fillText(choice.text, 60, y);
+                }
+              }
+            }
+          }
+        }
+
+        draw();
+        update();
+      }
+
+      start();
+    </script>
+  </body>
+</html>
