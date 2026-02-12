@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\Lucas\\Desktop\\rpg_v1\\Rpg2D\\Rpg2D.csproj": {}
+    "C:\\Users\\Lucas\\Desktop\\Rpg_v1\\Rpg2D\\Rpg2D.csproj": {}
   },
   "projects": {
-    "C:\\Users\\Lucas\\Desktop\\rpg_v1\\Rpg2D\\Rpg2D.csproj": {
+    "C:\\Users\\Lucas\\Desktop\\Rpg_v1\\Rpg2D\\Rpg2D.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\Lucas\\Desktop\\rpg_v1\\Rpg2D\\Rpg2D.csproj",
+        "projectUniqueName": "C:\\Users\\Lucas\\Desktop\\Rpg_v1\\Rpg2D\\Rpg2D.csproj",
         "projectName": "Rpg2D",
-        "projectPath": "C:\\Users\\Lucas\\Desktop\\rpg_v1\\Rpg2D\\Rpg2D.csproj",
+        "projectPath": "C:\\Users\\Lucas\\Desktop\\Rpg_v1\\Rpg2D\\Rpg2D.csproj",
         "packagesPath": "C:\\Users\\Lucas\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\Lucas\\Desktop\\rpg_v1\\Rpg2D\\obj\\",
+        "outputPath": "C:\\Users\\Lucas\\Desktop\\Rpg_v1\\Rpg2D\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\Lucas\\AppData\\Roaming\\NuGet\\NuGet.Config"
