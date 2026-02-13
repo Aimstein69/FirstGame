@@ -1,7 +1,7 @@
 {
   "width": 10,
   "height": 10,
-  "tileSize": 32,
+  "tileSize": 48,
 
   "tiles": [
     [1,1,1,1,1,1,1,1,1,1],

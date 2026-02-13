@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Rpg2D")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+0922a3c4284feb10b80c573ea59b697752513e9d")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+1b03a0ee075d022ca83b1a4dc1eef9455a807904")]
 [assembly: System.Reflection.AssemblyProductAttribute("Rpg2D")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Rpg2D")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
